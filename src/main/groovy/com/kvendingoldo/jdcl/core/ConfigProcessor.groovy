@@ -87,7 +87,20 @@ class ConfigProcessor {
         }
     }
 
-    static void prettyPrint(def config, def out) {
-        out.println(new Yaml().dump(config))
+    /**
+     * This function is used to add some job properties to console output
+     * @param jc job config object
+     * @param out output stream
+     * @return additional text for console output
+     */
+    static void prettyPrint(def jc, def out) {
+        def jobName = Functions.generateJobName(jc)
+        out.println """============================================================================
+                       |Job Name: ${jc.job.baseName}
+                       |Job Location: ${jobName}
+                       |Job Type: ${jc.job.type}
+                       |Job Class: ${jc.job.baseClassName}
+                       |============================================================================
+                    """.stripMargin().stripIndent()
     }
 }

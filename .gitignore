@@ -1,0 +1,10 @@
+*.swp
+*.iml
+target/
+.idea/
+output/
+.DS_Store
+.gradle/
+build/
+!src/**/build
+releasenotes.html

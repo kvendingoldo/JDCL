@@ -1,21 +1,24 @@
 package com.kvendingoldo.jdcl.core
 
 import com.kvendingoldo.jdcl.core.ConfigProcessor
+import com.kvendingoldo.jdcl.core.JenkinsLogger
 
 import hudson.FilePath
 import hudson.model.Executor
 
 import org.yaml.snakeyaml.*
-import groovy.util.*;
 
 
 class JobGenerator {
     def dslFactory
     def workspace
+    def logger
 
     public JobGenerator(dslFactory) {
         this.dslFactory = dslFactory
         this.workspace = Executor.currentExecutor().getCurrentWorkspace()
+        this.logger = new JenkinsLogger('INFO', this.dslFactory.out)
+
     }
 
     def generate() {
@@ -34,6 +37,7 @@ class JobGenerator {
         def configProcessor = new ConfigProcessor(dslFactory)
 
         configs.list().each { config ->
+            logger.printLog "Reading: ${config}"
             configProcessor.processConfig(config.toString()).each { jobName, jc ->
                 if (jc.job.folder != '') {
                     def list = jc.job.folder.split("/").toList()
@@ -46,8 +50,13 @@ class JobGenerator {
                     }
                 }
 
-                def jobClass = loadBuildClass(jc)
-                jobClass.job(dslFactory, jc)
+                def createJobs = { jcLocal ->
+                    logger.printLog "Processing..."
+                    ConfigProcessor.prettyPrint(jcLocal, this.dslFactory.out)
+                    def jobClass = loadBuildClass(jcLocal)
+                    jobClass.job(dslFactory, jcLocal)
+                }
+                createJobs(jc)
             }
         }
     }
