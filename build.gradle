@@ -1,21 +1,33 @@
+apply from: "${rootDir}/gradle/versions.gradle"
+
+buildscript {
+  repositories {
+    jcenter();
+  }
+  dependencies {
+    classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+  }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'groovy'
-apply from: "$rootDir/gradle/versions.gradle"
 
 repositories {
-    mavenCentral()
-    maven { url "https://repo.spring.io/plugins-release" }
+  mavenCentral()
+  maven { url "https://repo.spring.io/plugins-release" }
 }
 
 dependencies {
-    compile(
-            "org.codehaus.groovy:groovy-all:${versions.groovy}",
-            "org.jenkins-ci.main:jenkins-core:${versions.jenkins}@jar",
-            "org.eclipse.hudson:hudson-core:${versions.hudson}@jar",
-            "org.yaml:snakeyaml:${versions.snakeyaml}@jar"
-    )
+  compile(
+    "org.codehaus.groovy:groovy-all:${versions.groovy}",
+    "org.jenkins-ci.main:jenkins-core:${versions.jenkins}",
+    "org.eclipse.hudson:hudson-core:${versions.hudson}",
+    "org.yaml:snakeyaml:${versions.snakeyaml}@jar"
+  )
 }
 
-jar {
-    dependsOn configurations.runtime
-    from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+shadowJar {
+  dependencies {
+    include(dependency("org.yaml:snakeyaml:${versions.snakeyaml}@jar"))
+  }
 }
