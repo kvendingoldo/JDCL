@@ -4,19 +4,12 @@ import org.yaml.snakeyaml.*
 
 class ConfigProcessor {
 
-    private String importDirectory
-    private def processorConfig
+    private static String importDirectory
     private def dslFactory
 
     public ConfigProcessor(dslFactory) {
         this.dslFactory = dslFactory
-        onInit()
-        this.importDirectory = processorConfig.importDirectory
-    }
-
-    private def onInit() {
-        String configText = this.dslFactory.readFileFromWorkspace('./ConfigProcessorConfig.yml')
-        processorConfig = new Yaml().load(configText)
+        this.importDirectory = 'configuration'
     }
 
     private def getCleanConfig(def config) {
