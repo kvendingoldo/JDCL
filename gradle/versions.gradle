@@ -1,0 +1,10 @@
+ext {
+    versions = [:]
+}
+
+versions += [
+        groovy   : "2.4.14",
+        jenkins  : "2.60.3",
+        hudson   : "3.3.3",
+        snakeyaml: "1.22"
+]

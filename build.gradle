@@ -1,0 +1,21 @@
+apply plugin: 'groovy'
+apply from: "$rootDir/gradle/versions.gradle"
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/plugins-release" }
+}
+
+dependencies {
+    compile(
+            "org.codehaus.groovy:groovy-all:${versions.groovy}",
+            "org.jenkins-ci.main:jenkins-core:${versions.jenkins}@jar",
+            "org.eclipse.hudson:hudson-core:${versions.hudson}@jar",
+            "org.yaml:snakeyaml:${versions.snakeyaml}@jar"
+    )
+}
+
+jar {
+    dependsOn configurations.runtime
+    from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+}
