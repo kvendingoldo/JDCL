@@ -1,1 +1,10 @@
 JobDSL Common Library (JDCL)
+
+
+Build:
+
+    gradle build shadowJar
+
+
+
+JFI (testing jobs): https://github.com/unguiculus/job-dsl-sample/blob/master/build.gradle

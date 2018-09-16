@@ -6,5 +6,6 @@ output/
 .DS_Store
 .gradle/
 build/
+out/
 !src/**/build
 releasenotes.html
