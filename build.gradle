@@ -1,16 +1,23 @@
 apply from: "${rootDir}/gradle/versions.gradle"
 
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'groovy'
+
 buildscript {
   repositories {
-    jcenter();
+    jcenter()
   }
   dependencies {
     classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+    classpath 'org.ajoberstar:grgit:1.7.0'
   }
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'groovy'
+ext {
+    git = org.ajoberstar.grgit.Grgit.open(file('.'))
+}
+
+version = "1.0-${new Date().format('yyyyMMddHHmm')}-${git.head().abbreviatedId}"
 
 repositories {
   mavenCentral()
