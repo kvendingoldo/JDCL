@@ -4,13 +4,13 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'groovy'
 
 buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
-    classpath 'org.ajoberstar:grgit:1.7.0'
-  }
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+        classpath 'org.ajoberstar:grgit:1.7.0'
+    }
 }
 
 ext {
@@ -20,21 +20,22 @@ ext {
 version = "1.0-${new Date().format('yyyyMMddHHmm')}-${git.head().abbreviatedId}"
 
 repositories {
-  mavenCentral()
-  maven { url "https://repo.spring.io/plugins-release" }
+    mavenCentral()
+    maven { url "https://repo.spring.io/plugins-release" }
 }
 
 dependencies {
-  compile(
-    "org.codehaus.groovy:groovy-all:${versions.groovy}",
-    "org.jenkins-ci.main:jenkins-core:${versions.jenkins}",
-    "org.eclipse.hudson:hudson-core:${versions.hudson}",
-    "org.yaml:snakeyaml:${versions.snakeyaml}@jar"
-  )
+    compile(
+            "org.codehaus.groovy:groovy-all:${versions.groovy}",
+            "org.jenkins-ci.main:jenkins-core:${versions.jenkins}",
+            "org.eclipse.hudson:hudson-core:${versions.hudson}",
+            "org.yaml:snakeyaml:${versions.snakeyaml}@jar"
+    )
 }
 
 shadowJar {
-  dependencies {
-    include(dependency("org.yaml:snakeyaml:${versions.snakeyaml}@jar"))
-  }
+    classifier = 'fat'
+    dependencies {
+        include(dependency("org.yaml:snakeyaml:${versions.snakeyaml}@jar"))
+    }
 }
