@@ -1,16 +1,20 @@
 package com.kvendingoldo.jdcl.core
 
 static generateJobName(def jc) {
-    return generateJobName(jc.job.folder, jc.job.baseName)
+    return generateJobName(jc.jenkins.mainJobDslBranch, jc.job.folder, jc.job.baseName)
 }
 
-static generateJobName(String folder, String baseName, String classifier = null) {
+static generateJobName(String branch, String folder, String baseName) {
     String result = baseName
     if (folder != '') {
+        def build = Thread.currentThread().executable
+        def currentBranch = build.buildVariableResolver.resolve('BRANCH')
+
+        if (currentBranch != branch) {
+            folder = "${currentBranch}/${folder}"
+        }
+
         result = folder + '/' + baseName
-    }
-    if (classifier != null && classifier != '') {
-        result = "${result}_${classifier}"
     }
     return result
 }
