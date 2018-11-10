@@ -13,7 +13,10 @@ class JobGenerator {
     def dslFactory
     def classifier
     def workspace
-    def logger
+    def loggerInfo
+    def loggerDebug
+    def loggerWarn
+    def loggerErr
 
     JobGenerator() {}
 
@@ -21,7 +24,20 @@ class JobGenerator {
         this.dslFactory = dslFactory
         this.classifier = classifier
         this.workspace = Executor.currentExecutor().getCurrentWorkspace()
-        this.logger = new JenkinsLogger('INFO', this.dslFactory.out)
+
+        this.loggerInfo = new JenkinsLogger('INFO', this.dslFactory.out)
+        //this.loggerInfo.printLog "test"
+
+
+        this.loggerDebug = new JenkinsLogger('DEBUG', this.dslFactory.out)
+        //this.loggerDebug.printLog "test"
+
+        this.loggerWarn = new JenkinsLogger('WARN', this.dslFactory.out)
+        //this.loggerWarn.printLog "test"
+
+        this.loggerErr = new JenkinsLogger('ERROR', this.dslFactory.out)
+        //this.loggerErr.printLog "test"
+
     }
 
     def generate() {
@@ -40,7 +56,7 @@ class JobGenerator {
         def configProcessor = new ConfigProcessor(this.dslFactory)
 
         configs.list().each { config ->
-            logger.printLog "Reading: ${config}"
+            this.loggerInfo.printLog "Reading: ${config}"
 
             configProcessor.processConfig(config.toString()).each { jobName, jc ->
                 if (jc.job.folder != '') {
@@ -54,14 +70,22 @@ class JobGenerator {
                     }
                 }
 
-                if ((jc.job).containsKey('classifier') && jc.job.classifier == this.classifier) {
-                    def createJobs = { jcLocal ->
-                        logger.printLog "Processing..."
-                        ConfigProcessor.prettyPrint(jcLocal, this.dslFactory.out)
-                        def jobClass = loadBuildClass(jcLocal)
-                        jobClass.job(this.dslFactory, jcLocal)
+                this.loggerDebug.printLog "Current config: ${jc}"
+
+                if ((jc.job).containsKey('classifier')) {
+                    if (jc.job.classifier == this.classifier) {
+                        def createJobs = { jcLocal ->
+                            this.loggerInfo.printLog "Processing..."
+                            ConfigProcessor.prettyPrint(jcLocal, this.dslFactory.out)
+                            def jobClass = loadBuildClass(jcLocal)
+                            jobClass.job(this.dslFactory, jcLocal)
+                        }
+                        createJobs(jc)
+                    } else {
+                        this.loggerWarn.printLog "Skip..."
                     }
-                    createJobs(jc)
+                } else {
+                    this.loggerErr.printLog "Key classifier does not exist in the jc"
                 }
 
             }

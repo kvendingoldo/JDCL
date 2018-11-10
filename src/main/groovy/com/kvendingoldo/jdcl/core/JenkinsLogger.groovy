@@ -4,7 +4,6 @@ package com.kvendingoldo.jdcl.core
  * General class for Jenkins logging.
  * We use this class to send formatted and colored messages
  * to Console Output of Jenkins builds.
- *
  */
 
 class JenkinsLogger {

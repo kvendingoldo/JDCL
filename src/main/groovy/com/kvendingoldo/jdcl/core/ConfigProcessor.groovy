@@ -2,42 +2,49 @@ package com.kvendingoldo.jdcl.core
 
 import org.yaml.snakeyaml.*
 
+/**
+ * General class for process configuration files
+ *
+ * If you want try to run it locally, you should replace
+ * this.dslFactory.readFileFromWorkspace(jcPath) to
+ * new File(jcPath).getText('UTF-8')
+ *
+ */
+
+
 class ConfigProcessor {
 
     private static String importDirectory
     private def dslFactory
+
+    public ConfigProcessor() {
+        this.importDirectory = 'configuration'
+    }
 
     public ConfigProcessor(dslFactory) {
         this.dslFactory = dslFactory
         this.importDirectory = 'configuration'
     }
 
-    private def getCleanConfig(def config) {
-        return config.findAll { key, _ -> !(key in ['imports']) }
-    }
+    public def processConfig(String jcPath) {
+        def jc = new Yaml().load(this.dslFactory.readFileFromWorkspace(jcPath))
+        if (jc.containsKey('imports')) {
+            def jcChild = jc.findAll {key, _ -> !(key in ['imports'])}
 
-    public def processConfig(String path) {
-        String configText = this.dslFactory.readFileFromWorkspace(path)
-        def imports = null
-        def config = new Yaml().load(configText)
-
-        if (config.imports) {
-            imports = config.imports
-        }
-
-        config.findAll {
-            key, _ -> !(key in ['imports'])
-        }.each { key, value ->
-            if (value.imports) {
-                def customImports = value.imports
-                value = applyImports(getCleanConfig(value), imports)
-                config."${key}" = applyImports(value, customImports)
-            } else {
-                config."${key}" = applyImports(value, imports)
+            (jc.imports).each { jcImport ->
+                def jcParent = processConfig("${this.importDirectory}/${jcImport}")
+                if (jcChild.job) {
+                    jcChild = merge(jcChild, jcParent)
+                } else {
+                    jcChild.findAll { key, _ -> !(key in ['job']) }.each { key, value ->
+                        jcChild."${key}" = merge(jcChild."${key}", jcParent)
+                    }
+                }
             }
+            return jcChild
+        } else {
+            return jc
         }
-
-        return getCleanConfig(config)
     }
 
     private def merge(def config, def object) {
@@ -53,24 +60,8 @@ class ConfigProcessor {
         return config
     }
 
-    private def applyImports(def config, def imports) {
-        if (imports) {
-            imports.each { importObject ->
-                String importText = this.dslFactory.readFileFromWorkspace("${importDirectory}/${importObject}")
-                merge(config, new Yaml().load(importText))
-            }
-        }
-        return config
-    }
-
     private def validate(def config) {
         // TODO
-    }
-
-    static def getConfigObject(def config) {
-        def сonfigObject = new ConfigObject()
-        сonfigObject.putAll(config)
-        return сonfigObject
     }
 
     static def clone(def config) {
