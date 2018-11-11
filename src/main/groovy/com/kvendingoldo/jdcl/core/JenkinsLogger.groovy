@@ -7,10 +7,10 @@ package com.kvendingoldo.jdcl.core
  */
 
 class JenkinsLogger {
-    def out
-    String logLevel
+    private def out
+    private String logLevel
 
-    def colors = ['ERROR': "\033[31m", 'WARN': "\033[33m", 'INFO': "\033[32m", 'DEBUG': "\033[34m"]
+    private def colors = ['ERROR': "\033[31m", 'WARN': "\033[33m", 'INFO': "\033[32m", 'DEBUG': "\033[34m"]
 
     /**
      * This is construction method for JenkinsLogger class.

@@ -1,10 +1,30 @@
 JobDSL Common Library (JDCL)
 
+### Build
 
-Build:
+For build jar, use:
 
     gradle build shadowJar
 
 
+### Local testing
+
+If you want to try ConfigProcessor locally you should use the next constructor:
+
+    ConfigProcessor(String logLevel) {
+        this.logger = new JenkinsLogger(logLevel, System.out)
+    }
+
+
+and also you should replace
+
+    this.dslFactory.readFileFromWorkspace(jcPath)
+
+to
+
+    new File(jcPath).getText('UTF-8')
+
+
+### Misc
 
 JFI (testing jobs): https://github.com/unguiculus/job-dsl-sample/blob/master/build.gradle

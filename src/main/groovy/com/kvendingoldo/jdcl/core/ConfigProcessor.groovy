@@ -1,35 +1,34 @@
 package com.kvendingoldo.jdcl.core
 
+import com.kvendingoldo.jdcl.core.JenkinsLogger
+
 import org.yaml.snakeyaml.*
 
 /**
  * General class for process configuration files
- *
- * If you want try to run it locally, you should replace
- * this.dslFactory.readFileFromWorkspace(jcPath) to
- * new File(jcPath).getText('UTF-8')
- *
  */
 
 
 class ConfigProcessor {
 
-    private static String importDirectory
     private def dslFactory
+    private def logger
+    private String importDirectory = 'configuration'
 
-    public ConfigProcessor() {
-        this.importDirectory = 'configuration'
-    }
-
-    public ConfigProcessor(dslFactory) {
+    ConfigProcessor(def dslFactory, def logger) {
         this.dslFactory = dslFactory
-        this.importDirectory = 'configuration'
+        this.logger = logger
     }
 
-    public def processConfig(String jcPath) {
+    def setImportDirectory(String importDirectory) {
+        this.importDirectory = importDirectory
+    }
+
+    def processConfig(String jcPath) {
         def jc = new Yaml().load(this.dslFactory.readFileFromWorkspace(jcPath))
+
         if (jc.containsKey('imports')) {
-            def jcChild = jc.findAll {key, _ -> !(key in ['imports'])}
+            def jcChild = jc.findAll { key, _ -> !(key in ['imports']) }
 
             (jc.imports).each { jcImport ->
                 def jcParent = processConfig("${this.importDirectory}/${jcImport}")
@@ -60,8 +59,15 @@ class ConfigProcessor {
         return config
     }
 
-    private def validate(def config) {
-        // TODO
+    def isConfigValid(jc) {
+        this.logger.printLog('DEBUG', "Validating ${jc.job.baseName} ...")
+        if (jc.size() == 1) {
+            this.logger.printLog('DEBUG', "${jc.job.baseName} is valid")
+            return true
+        } else {
+            this.logger.printLog('ERROR', "${jc.job.baseName} is invalid and job won't be deployed")
+            return false
+        }
     }
 
     static def clone(def config) {
@@ -84,7 +90,7 @@ class ConfigProcessor {
                        |Job Location: ${jobName}
                        |Job Type: ${jc.job.type}
                        |Job Class: ${jc.job.baseClassName}
-                       |============================================================================
+                      |============================================================================
                     """.stripMargin().stripIndent()
     }
 }

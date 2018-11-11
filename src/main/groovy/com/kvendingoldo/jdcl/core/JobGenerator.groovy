@@ -10,34 +10,21 @@ import org.yaml.snakeyaml.*
 
 
 class JobGenerator {
-    def dslFactory
-    def classifier
-    def workspace
-    def loggerInfo
-    def loggerDebug
-    def loggerWarn
-    def loggerErr
 
-    JobGenerator() {}
+    private def dslFactory
+    private def logger
+    private def configProcessor
+    private String classifier
 
-    JobGenerator(dslFactory, classifier) {
+    JobGenerator(dslFactory, String logLevel, String classifier) {
         this.dslFactory = dslFactory
         this.classifier = classifier
-        this.workspace = Executor.currentExecutor().getCurrentWorkspace()
+        this.logger = new JenkinsLogger(logLevel, this.dslFactory.out)
+        this.configProcessor = new ConfigProcessor(this.dslFactory, this.logger)
+    }
 
-        this.loggerInfo = new JenkinsLogger('INFO', this.dslFactory.out)
-        //this.loggerInfo.printLog "test"
-
-
-        this.loggerDebug = new JenkinsLogger('DEBUG', this.dslFactory.out)
-        //this.loggerDebug.printLog "test"
-
-        this.loggerWarn = new JenkinsLogger('WARN', this.dslFactory.out)
-        //this.loggerWarn.printLog "test"
-
-        this.loggerErr = new JenkinsLogger('ERROR', this.dslFactory.out)
-        //this.loggerErr.printLog "test"
-
+    def loadBuildClass(def jc) {
+        return this.dslFactory.class.classLoader.parseClass(dslFactory.readFileFromWorkspace("jobdsl/${jc.job.type}/jobs/${jc.job.baseClassName}.groovy"))?.newInstance()
     }
 
     def generate() {
@@ -47,20 +34,19 @@ class JobGenerator {
         }
     }
 
-    def loadBuildClass(def bc) {
-        return this.dslFactory.class.classLoader.parseClass(dslFactory.readFileFromWorkspace("jobdsl/${bc.job.type}/jobs/${bc.job.baseClassName}.groovy"))?.newInstance()
-    }
-
-    def generate(type) {
-        def configs = new FilePath(workspace, "jobdsl/${type}/configuration")
-        def configProcessor = new ConfigProcessor(this.dslFactory)
+    def generate(String type) {
+        def configs = new FilePath(Executor.currentExecutor().getCurrentWorkspace(), "jobdsl/${type}/configuration")
 
         configs.list().each { config ->
-            this.loggerInfo.printLog "Reading: ${config}"
+            this.logger.printLog('INFO', "\nReading: ${config}")
 
-            configProcessor.processConfig(config.toString()).each { jobName, jc ->
+            this.configProcessor.processConfig(config.toString()).each { jobName, jc ->
+
+                this.logger.printLog('INFO', "Processing ${jobName}...")
+                this.logger.printLog('DEBUG', "Config representation (${jobName}): ${jc}")
+
                 if (jc.job.folder != '') {
-                    def list = jc.job.folder.split("/").toList()
+                    def list = jc.job.folder.split('/').toList()
                     def folderName = "${list[0]}"
                     this.dslFactory.folder(folderName)
 
@@ -70,24 +56,24 @@ class JobGenerator {
                     }
                 }
 
-                this.loggerDebug.printLog "Current config: ${jc}"
-
                 if ((jc.job).containsKey('classifier')) {
                     if (jc.job.classifier == this.classifier) {
                         def createJobs = { jcLocal ->
-                            this.loggerInfo.printLog "Processing..."
-                            ConfigProcessor.prettyPrint(jcLocal, this.dslFactory.out)
-                            def jobClass = loadBuildClass(jcLocal)
-                            jobClass.job(this.dslFactory, jcLocal)
+                            if (this.configProcessor.isConfigValid(jcLocal)) {
+                                this.configProcessor.prettyPrint(jcLocal, this.dslFactory.out)
+                                def jobClass = loadBuildClass(jcLocal)
+                                jobClass.job(this.dslFactory, jcLocal)
+
+                            }
                         }
                         createJobs(jc)
                     } else {
-                        this.loggerWarn.printLog "Skip..."
+                        this.logger.printLog('INFO', "Job ${jobName} was skipped by classifier")
+                        this.logger.printLog('DEBUG', "Seed classifier=${this.classifier}, job classifier=${jc.job.classifier}\n")
                     }
                 } else {
-                    this.loggerErr.printLog "Key classifier does not exist in the jc"
+                    this.logger.printLog('WARN', "Key classifier does not exist for ${jobName}\n")
                 }
-
             }
         }
     }

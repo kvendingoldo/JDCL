@@ -15,7 +15,7 @@ buildscript {
 }
 
 def git = org.ajoberstar.grgit.Grgit.open(dir: '.')
-version = "1.0-${new Date().format('yyyyMMddHHmm')}-${git.head().abbreviatedId}"
+version = "1.2-${new Date().format('yyyyMMddHHmm')}-${git.head().abbreviatedId}"
 
 repositories {
     mavenCentral()
