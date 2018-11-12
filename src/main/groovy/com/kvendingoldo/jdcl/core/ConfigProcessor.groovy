@@ -8,24 +8,34 @@ import org.yaml.snakeyaml.*
  * General class for process configuration files
  */
 
-
 class ConfigProcessor {
 
     private def dslFactory
     private def logger
     private String importDirectory = 'configuration'
+    private String type = 'JENKINS'
 
-    ConfigProcessor(def dslFactory, def logger) {
-        this.dslFactory = dslFactory
+    ConfigProcessor(String type, def logger) {
         this.logger = logger
+        this.type = type
     }
 
     def setImportDirectory(String importDirectory) {
         this.importDirectory = importDirectory
     }
 
+    def setDslFactory(def dslFactory) {
+        this.dslFactory = dslFactory
+    }
+
     def processConfig(String jcPath) {
-        def jc = new Yaml().load(this.dslFactory.readFileFromWorkspace(jcPath))
+        def jc
+
+        if (this.type == 'LOCAL') {
+            jc = new Yaml().load(new File(jcPath).getText('UTF-8'))
+        } else if (this.type == 'JENKINS') {
+            jc = new Yaml().load(this.dslFactory.readFileFromWorkspace(jcPath))
+        }
 
         if (jc.containsKey('imports')) {
             def jcChild = jc.findAll { key, _ -> !(key in ['imports']) }

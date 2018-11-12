@@ -8,19 +8,24 @@ import hudson.model.Executor
 
 import org.yaml.snakeyaml.*
 
+/**
+ * Jenkins job generator.
+ * This class are not able to run locally
+ */
 
 class JobGenerator {
 
     private def dslFactory
     private def logger
-    private def configProcessor
+    private ConfigProcessor configProcessor
     private String classifier
 
-    JobGenerator(dslFactory, String logLevel, String classifier) {
+    JobGenerator(def dslFactory, String logLevel, String classifier) {
         this.dslFactory = dslFactory
         this.classifier = classifier
         this.logger = new JenkinsLogger(logLevel, this.dslFactory.out)
-        this.configProcessor = new ConfigProcessor(this.dslFactory, this.logger)
+        this.configProcessor = new ConfigProcessor('JENKINS', this.logger)
+        this.configProcessor.setDslFactory(this.dslFactory)
     }
 
     def loadBuildClass(def jc) {
