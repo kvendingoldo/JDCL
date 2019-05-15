@@ -42,7 +42,7 @@ class ConfigProcessor {
 
             (jc.imports).each { jcImport ->
                 def jcParent = processConfig("${this.importDirectory}/${jcImport}")
-                if (jcChild.job) {
+                if (jcChild.job!=null) {
                     jcChild = merge(jcChild, jcParent)
                 } else {
                     jcChild.findAll { key, _ -> !(key in ['job']) }.each { key, value ->
@@ -58,7 +58,7 @@ class ConfigProcessor {
 
     private def merge(def config, def object) {
         object?.each { key, value ->
-            if (config."${key}" == null) {
+            if (config."${key}" == null || (!config.containsKey(key))) {
                 config."${key}" = value
             } else {
                 if (!(config."${key}" instanceof String)) {

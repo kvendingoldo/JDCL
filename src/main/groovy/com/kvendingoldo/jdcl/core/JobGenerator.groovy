@@ -50,15 +50,15 @@ class JobGenerator {
                 this.logger.printLog('INFO', "Processing ${jobName}...")
                 this.logger.printLog('DEBUG', "Config representation (${jobName}): ${jc}")
 
-                if (jc.job.folder != '') {
-                    def list = jc.job.folder.split('/').toList()
-                    def folderName = "${list[0]}"
-                    this.dslFactory.folder(folderName)
+                String folder = Functions.getFolderName(jc)
 
-                    for (String item : list.drop(1)) {
-                        folderName = folderName + "/" + item
-                        this.dslFactory.folder(folderName)
-                    }
+                def list = folder.split('/').toList()
+                def folderName = "${list[0]}"
+                this.dslFactory.folder(folderName)
+
+                for (String item : list.drop(1)) {
+                    folderName = folderName + '/' + item
+                    this.dslFactory.folder(folderName)
                 }
 
                 if ((jc.job).containsKey('classifier')) {

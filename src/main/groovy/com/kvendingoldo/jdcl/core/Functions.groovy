@@ -1,15 +1,13 @@
 package com.kvendingoldo.jdcl.core
 
-static generateJobName(def jc) {
-    return generateJobName(jc.job.folder, jc.job.baseName)
+static getFolderName(def jc) {
+  if (jc.job.folder!=null) {
+    return jc.job.folder
+  } else {
+    return jc.job.classifier + '/' + jc.job.type
+  }
 }
 
-static generateJobName(String folder, String baseName) {
-    String result = baseName
-
-    if (folder != '') {
-        result = folder + '/' + baseName
-    }
-
-    return result
+static generateJobName(def jc) {
+    return getFolderName(jc) + '/' + jc.job.baseName
 }
