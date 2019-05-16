@@ -71,13 +71,8 @@ class ConfigProcessor {
 
     def isConfigValid(jc) {
         this.logger.printLog('DEBUG', "Validating ${jc.job.baseName} ...")
-        if (jc.size() == 1) {
-            this.logger.printLog('DEBUG', "${jc.job.baseName} is valid")
-            return true
-        } else {
-            this.logger.printLog('ERROR', "${jc.job.baseName} is invalid and job won't be deployed")
-            return false
-        }
+        /* logic should be formalized and added */
+        return true
     }
 
     static def clone(def config) {

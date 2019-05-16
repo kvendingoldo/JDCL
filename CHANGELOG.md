@@ -1,3 +1,8 @@
+## 1.3.1 (May 17, 2019)
+
+BUG FIXES:
+* `def isConfigValid(jc)` function
+
 ## 1.3.0 (May 15, 2019)
 
 IMPROVEMENTS:
